@@ -89,29 +89,64 @@ export class ReviewStudent extends Component {
         return a + b
       }, 0)
       const checkList = this.props.selectedInstance.checklists.find(checkl => checkl.week === Number(this.props.ownProps.weekNumber))
+
+      const isChecked = checkName => {
+        return this.props.weekReview.checks[checkName] === undefined
+          ? !!checks[checkName]
+          : this.props.weekReview.checks[checkName]
+      }
+
+      const getPointsForCheck = row => {
+        const points = isChecked(row.name)
+          ? row.checkedPoints
+          : row.uncheckedPoints
+        return points || 0 // points may be undefined?
+      }
+
+      const sum = (a, b) => a + b
+
+      const countChecksPoints = checks => {
+        const points = checks.map(getPointsForCheck).reduce(sum, 0)
+        if (points < 0) {
+          return 0
+        }
+        // I honestly don't know if weekMaxPoints can be undefined
+        // Let's keep the > for now because it's false if it really is undefined
+        // If it turns out that it can't be undefined, replace this+above
+        // with clamp(points, 0, this.props.selectedInstance.weekMaxPoints)
+        if (points > this.props.selectedInstance.weekMaxPoints) {
+          return this.props.selectedInstance.weekMaxPoints
+        }
+
+        return points
+      }
+
+      const generateChecksFeedbackText = checks =>
+        checks
+          .map(row => (isChecked(row.name) ? row.textWhenOn : row.textWhenOff))
+          .filter(text => !!text) // don't include empty text
+          .join('\n\n')
+
       let checklistOutput = ''
       let checklistPoints = 0
+
       if (checkList) {
-        Object.keys(checkList.list).forEach(cl => {
-          checkList.list[cl].forEach(row => {
-            const isChecked = this.props.weekReview.checks[row.name] === undefined ? (checks[row.name] !== undefined ? checks[row.name] : false) : this.props.weekReview.checks[row.name]
-
-            const addition = isChecked ? row.textWhenOn : row.textWhenOff
-            if (addition) checklistOutput += addition + '\n\n'
-
-            if (isChecked) {
-              checklistPoints += row.checkedPoints
-            } else {
-              checklistPoints += row.uncheckedPoints
-            }
-          })
-        })
-        if (checklistPoints < 0) {
-          checklistPoints = 0
-        } else if (checklistPoints > this.props.selectedInstance.weekMaxPoints) {
-          checklistPoints = this.props.selectedInstance.weekMaxPoints
-        }
+        /* checkList.list is a dictionary where the key is the name of the
+         * checklist and its value is the array of "checks".
+         * e.g. {
+         *   "Exercise 1": [],
+         *   "Exercise 2": [],
+         *   "Overall": []
+         * }
+         * --> pluck out and flatten the arrays of checks so we can count em
+         */
+        const allChecks = Object.values(checkList.list).flatMap(sublist =>
+          Object.values(sublist)
+        )
+        checklistPoints = countChecksPoints(allChecks)
+        checklistOutput = generateChecksFeedbackText(allChecks)
       }
+
       return (
         <div className="ReviewStudent" style={{ textAlignVertical: 'center', textAlign: 'center' }}>
           <h2> {this.props.selectedInstance.name}</h2>

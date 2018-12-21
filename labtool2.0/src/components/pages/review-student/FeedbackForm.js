@@ -32,19 +32,25 @@ PointsField.propTypes = {
 }
 
 const FeedbackField = ({ forwardRef, initialText }) => (
-  <div ref={forwardRef}>
-    {/* Do not change the contents of this div.
+  <Form.Field>
+    <label htmlFor="comment" style={{ textAlign: 'left' }}>
+      Feedback
+    </label>
+    <div ref={forwardRef}>
+      {/* Do not change the contents of this div.
     * ReviewStudent::copyChecklistOutput relies on its current structure
     * to copy the checks' generated text to the TextArea.
     * TextArea cannot be ref'd directly because it is a stateless
     * component.
     */}
-    <Form.TextArea
-      defaultValue={initialText}
-      name="comment"
-      style={{ width: '500px', height: '250px' }}
-    />
-  </div>
+      <Form.TextArea
+        defaultValue={initialText}
+        name="comment"
+        id="comment"
+        style={{ width: '500px', height: '250px' }}
+      />
+    </div>
+  </Form.Field>
 )
 
 FeedbackField.propTypes = {

@@ -69,21 +69,28 @@ export class ReviewStudent extends Component {
 
   handleSubmit = async e => {
     try {
+      const {
+        addRedirectHook,
+        createOneWeek,
+        selectedInstance,
+        studentInstance,
+        weekNumber,
+        weekReview
+      } = this.props
+
       e.preventDefault()
       const content = {
         points: e.target.points.value,
-        studentInstanceId: this.props.studentInstance,
+        studentInstanceId: studentInstance,
         feedback: e.target.comment.value,
-        weekNumber: this.props.weekNumber,
-        checks: this.props.weekReview.checks
+        weekNumber,
+        checks: weekReview.checks
       }
-      if (e.target.points.value < 0 || e.target.points.value > this.props.selectedInstance.weekMaxPoints) {
+      if (e.target.points.value < 0 || e.target.points.value > selectedInstance.weekMaxPoints) {
         store.dispatch({ type: 'WEEKS_CREATE_ONEFAILURE' })
       } else {
-        this.props.addRedirectHook({
-          hook: 'WEEKS_CREATE_ONE'
-        })
-        await this.props.createOneWeek(content)
+        addRedirectHook({ hook: 'WEEKS_CREATE_ONE' })
+        await createOneWeek(content)
       }
     } catch (error) {
       console.log(error)
@@ -104,23 +111,31 @@ export class ReviewStudent extends Component {
   }
 
   render() {
-    if (this.props.loading.loading) {
+    const {
+      loading,
+      selectedInstance,
+      studentInstance,
+      weekNumber,
+      weekReview
+    } = this.props
+
+    if (loading.loading) {
       return <Loader active />
     }
-    if (this.props.loading.redirect) {
-      return <Redirect to={`/labtool/courses/${this.props.selectedInstance.ohid}`} />
+    if (loading.redirect) {
+      return <Redirect to={`/labtool/courses/${selectedInstance.ohid}`} />
     }
-    if (!Array.isArray(this.props.weekReview.data)) {
+    if (!Array.isArray(weekReview.data)) {
       return <Loader active />
     }
 
     //this.props.studentInstance is a string, therefore casting to number.
-    const studentData = this.props.weekReview.data.filter(dataArray => dataArray.id === Number(this.props.studentInstance))
+    const studentData = weekReview.data.filter(dataArray => dataArray.id === Number(studentInstance))
     //this.props.weekNumber is a string, therefore casting to number.
-    const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === Number(this.props.weekNumber))
+    const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === Number(weekNumber))
     const checks = weekData[0] ? weekData[0].checks : {}
     const weekPoints = studentData[0].weeks
-      .filter(week => week.weekNumber < this.props.weekNumber)
+      .filter(week => week.weekNumber < weekNumber)
       .map(week => week.points)
       .reduce((a, b) => {
         return a + b
@@ -128,12 +143,12 @@ export class ReviewStudent extends Component {
     const codeReviewPoints = studentData[0].codeReviews.map(review => review.points).reduce((a, b) => {
       return a + b
     }, 0)
-    const checkList = this.props.selectedInstance.checklists.find(checkl => checkl.week === Number(this.props.weekNumber))
+    const checkList = selectedInstance.checklists.find(checkl => checkl.week === Number(weekNumber))
 
     const isChecked = checkName => {
-      return this.props.weekReview.checks[checkName] === undefined
+      return weekReview.checks[checkName] === undefined
         ? !!checks[checkName]
-        : this.props.weekReview.checks[checkName]
+        : weekReview.checks[checkName]
     }
 
     const getPointsForCheck = row => {
@@ -154,8 +169,8 @@ export class ReviewStudent extends Component {
       // Let's keep the > for now because it's false if it really is undefined
       // If it turns out that it can't be undefined, replace this+above
       // with clamp(points, 0, this.props.selectedInstance.weekMaxPoints)
-      if (points > this.props.selectedInstance.weekMaxPoints) {
-        return this.props.selectedInstance.weekMaxPoints
+      if (points > selectedInstance.weekMaxPoints) {
+        return selectedInstance.weekMaxPoints
       }
 
       return points
@@ -187,21 +202,15 @@ export class ReviewStudent extends Component {
       checklistOutput = generateChecksFeedbackText(allChecks)
     }
 
-    const isFinalWeek =
-      Number(this.props.weekNumber, 10) >
-      this.props.selectedInstance.weekAmount
+    const isFinalWeek = Number(weekNumber) > selectedInstance.weekAmount
 
     return (
       <div className="ReviewStudent" style={{ textAlign: 'center' }}>
-        <CourseNameHeader name={this.props.selectedInstance.name} />
+        <CourseNameHeader name={selectedInstance.name} />
         <StudentNameHeader
           name={`${studentData[0].User.firsts} ${studentData[0].User.lastname}`}
         />
-        {isFinalWeek ? (
-          <h3>Final Review</h3>
-        ) : (
-          <h3>Viikko {this.props.weekNumber}</h3>
-        )}
+        {isFinalWeek ? <h3>Final Review</h3> : <h3>Viikko {weekNumber}</h3>}
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
@@ -215,7 +224,7 @@ export class ReviewStudent extends Component {
               <Form onSubmit={this.handleSubmit}>
                 <Form.Group inline unstackable>
                   <Form.Field>
-                    <label>Points 0-{this.props.selectedInstance.weekMaxPoints}</label>
+                    <label>Points 0-{selectedInstance.weekMaxPoints}</label>
 
                     <Input ref={this.reviewPointsRef} name="points" defaultValue={weekData[0] ? weekData[0].points : ''} type="number" step="0.01" style={{ width: '150px', align: 'center' }} />
                   </Form.Field>
@@ -231,7 +240,7 @@ export class ReviewStudent extends Component {
                   <Button className="ui center floated green button" type="submit">
                     Save
                   </Button>
-                  <Link to={`/labtool/browsereviews/${this.props.selectedInstance.ohid}/${studentData[0].id}`} type="Cancel">
+                  <Link to={`/labtool/browsereviews/${selectedInstance.ohid}/${studentData[0].id}`} type="Cancel">
                     <Button className="ui center floated button" type="cancel">
                       Cancel
                     </Button>
@@ -256,7 +265,7 @@ export class ReviewStudent extends Component {
                                     <Input
                                       type="checkbox"
                                       defaultChecked={checks[row.name] !== undefined ? checks[row.name] : false}
-                                      onChange={this.toggleCheckbox(row.name, this.props.studentInstance, this.props.weekNumber)}
+                                      onChange={this.toggleCheckbox(row.name, studentInstance, weekNumber)}
                                     />
                                   </Grid.Column>
                                   <Grid.Column width={10}>

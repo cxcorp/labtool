@@ -82,7 +82,7 @@ class App extends Component {
             <Route path={`/labtool/email`} component={Email} />
             <Route path={`/labtool/registerPage`} component={RegisterPage} />
             <Route
-              path={`/labtool/reviewstudent/:id/:si/:wk`}
+              path={`/labtool/reviewstudent/:id/:si(\\d+)/:wk(\\d+)`}
               render={({ match }) => <ReviewStudent courseId={match.params.id} studentInstance={match.params.si} weekNumber={match.params.wk} />}
             />
             <Route path={`/labtool/ModifyCourseInstancePage/:id`} render={({ match }) => <ModifyCourseInstancePage courseId={match.params.id} />} />

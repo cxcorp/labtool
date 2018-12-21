@@ -1,21 +1,29 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import { Button, Form, Input } from 'semantic-ui-react'
+import { Button, Form, Input, Label } from 'semantic-ui-react'
 
-const PointsField = ({ initialPoints, maxPoints, forwardInputRef }) => (
-  <Form.Field>
-    <label>Points 0-{maxPoints}</label>
-    <Input
-      ref={forwardInputRef}
-      name="points"
-      defaultValue={initialPoints}
-      type="number"
-      step="0.01"
-      style={{ width: '150px', align: 'center' }}
-    />
-  </Form.Field>
-)
+const PointsField = ({ initialPoints, maxPoints, forwardInputRef }) => {
+  const label = (
+    <Label as="label" htmlFor="points">
+      Points 0-{maxPoints}
+    </Label>
+  )
+  return (
+    <Form.Field className="foobar">
+      <Input
+        ref={forwardInputRef}
+        name="points"
+        id="points"
+        defaultValue={initialPoints}
+        type="number"
+        step="0.01"
+        labelPosition="left"
+        label={label}
+      />
+    </Form.Field>
+  )
+}
 
 PointsField.propTypes = {
   forwardInputRef: PropTypes.object,
@@ -72,14 +80,14 @@ const FeedbackForm = ({
 }) => {
   return (
     <Form onSubmit={onSubmit}>
-      <Form.Group inline unstackable>
+      <Form.Group>
         <PointsField
           forwardInputRef={forwardReviewPointsRef}
           initialPoints={initialReviewPoints}
           maxPoints={weekMaxPoints}
         />
       </Form.Group>
-      <Form.Group inline unstackable>
+      <Form.Group>
         <FeedbackField
           forwardRef={forwardReviewTextRef}
           initialText={initialReviewText}

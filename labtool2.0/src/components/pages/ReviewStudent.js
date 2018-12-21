@@ -128,16 +128,20 @@ export class ReviewStudent extends Component {
       return <Loader active />
     }
 
-    const studentData = weekReview.data.filter(dataArray => dataArray.id === studentId)
-    const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === weekNumber)
-    const checks = weekData[0] ? weekData[0].checks : {}
-    const weekPoints = studentData[0].weeks
+    const studentData = weekReview.data.find(
+      student => student.id === studentId
+    )
+    const weekData = studentData.weeks.find(
+      week => week.weekNumber === weekNumber
+    )
+    const checks = weekData ? weekData.checks : {}
+    const weekPoints = studentData.weeks
       .filter(week => week.weekNumber < weekNumber)
       .map(week => week.points)
       .reduce((a, b) => {
         return a + b
       }, 0)
-    const codeReviewPoints = studentData[0].codeReviews.map(review => review.points).reduce((a, b) => {
+    const codeReviewPoints = studentData.codeReviews.map(review => review.points).reduce((a, b) => {
       return a + b
     }, 0)
     const checkList = selectedCourse.checklists.find(checkl => checkl.week === weekNumber)
@@ -205,7 +209,7 @@ export class ReviewStudent extends Component {
       <div className="ReviewStudent" style={{ textAlign: 'center' }}>
         <CourseNameHeader name={selectedCourse.name} />
         <StudentNameHeader
-          name={`${studentData[0].User.firsts} ${studentData[0].User.lastname}`}
+          name={`${studentData.User.firsts} ${studentData.User.lastname}`}
         />
         {isFinalWeek ? <h3>Final Review</h3> : <h3>Viikko {weekNumber}</h3>}
         <Grid>
@@ -223,21 +227,21 @@ export class ReviewStudent extends Component {
                   <Form.Field>
                     <label>Points 0-{selectedCourse.weekMaxPoints}</label>
 
-                    <Input ref={this.reviewPointsRef} name="points" defaultValue={weekData[0] ? weekData[0].points : ''} type="number" step="0.01" style={{ width: '150px', align: 'center' }} />
+                    <Input ref={this.reviewPointsRef} name="points" defaultValue={weekData ? weekData.points : ''} type="number" step="0.01" style={{ width: '150px', align: 'center' }} />
                   </Form.Field>
                 </Form.Group>
                 <label> Feedback </label>
                 <Form.Group inline unstackable style={{ textAlignVertical: 'top' }}>
                   <div ref={this.reviewTextRef}>
                     {/*Do not add anything else to this div. If you do, you'll break this.copyChecklistOutput.*/}
-                    <Form.TextArea defaultValue={weekData[0] ? weekData[0].feedback : ''} name="comment" style={{ width: '500px', height: '250px' }} />
+                    <Form.TextArea defaultValue={weekData ? weekData.feedback : ''} name="comment" style={{ width: '500px', height: '250px' }} />
                   </div>
                 </Form.Group>
                 <Form.Field>
                   <Button className="ui center floated green button" type="submit">
                     Save
                   </Button>
-                  <Link to={`/labtool/browsereviews/${selectedCourse.ohid}/${studentData[0].id}`} type="Cancel">
+                  <Link to={`/labtool/browsereviews/${selectedCourse.ohid}/${studentData.id}`} type="Cancel">
                     <Button className="ui center floated button" type="cancel">
                       Cancel
                     </Button>

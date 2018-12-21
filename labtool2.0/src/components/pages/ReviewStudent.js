@@ -72,8 +72,8 @@ export class ReviewStudent extends Component {
       const {
         addRedirectHook,
         createOneWeek,
-        selectedInstance,
-        studentInstance,
+        selectedInstance: selectedCourse,
+        studentInstance: studentId,
         weekNumber,
         weekReview
       } = this.props
@@ -81,12 +81,12 @@ export class ReviewStudent extends Component {
       e.preventDefault()
       const content = {
         points: e.target.points.value,
-        studentInstanceId: studentInstance,
+        studentInstanceId: studentId,
         feedback: e.target.comment.value,
         weekNumber,
         checks: weekReview.checks
       }
-      if (e.target.points.value < 0 || e.target.points.value > selectedInstance.weekMaxPoints) {
+      if (e.target.points.value < 0 || e.target.points.value > selectedCourse.weekMaxPoints) {
         store.dispatch({ type: 'WEEKS_CREATE_ONEFAILURE' })
       } else {
         addRedirectHook({ hook: 'WEEKS_CREATE_ONE' })
@@ -113,8 +113,8 @@ export class ReviewStudent extends Component {
   render() {
     const {
       loading,
-      selectedInstance,
-      studentInstance,
+      selectedInstance: selectedCourse,
+      studentInstance: studentId,
       weekNumber,
       weekReview
     } = this.props
@@ -123,14 +123,14 @@ export class ReviewStudent extends Component {
       return <Loader active />
     }
     if (loading.redirect) {
-      return <Redirect to={`/labtool/courses/${selectedInstance.ohid}`} />
+      return <Redirect to={`/labtool/courses/${selectedCourse.ohid}`} />
     }
     if (!Array.isArray(weekReview.data)) {
       return <Loader active />
     }
 
     //this.props.studentInstance is a string, therefore casting to number.
-    const studentData = weekReview.data.filter(dataArray => dataArray.id === Number(studentInstance))
+    const studentData = weekReview.data.filter(dataArray => dataArray.id === Number(studentId))
     //this.props.weekNumber is a string, therefore casting to number.
     const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === Number(weekNumber))
     const checks = weekData[0] ? weekData[0].checks : {}
@@ -143,7 +143,7 @@ export class ReviewStudent extends Component {
     const codeReviewPoints = studentData[0].codeReviews.map(review => review.points).reduce((a, b) => {
       return a + b
     }, 0)
-    const checkList = selectedInstance.checklists.find(checkl => checkl.week === Number(weekNumber))
+    const checkList = selectedCourse.checklists.find(checkl => checkl.week === Number(weekNumber))
 
     const isChecked = checkName => {
       return weekReview.checks[checkName] === undefined
@@ -169,8 +169,8 @@ export class ReviewStudent extends Component {
       // Let's keep the > for now because it's false if it really is undefined
       // If it turns out that it can't be undefined, replace this+above
       // with clamp(points, 0, this.props.selectedInstance.weekMaxPoints)
-      if (points > selectedInstance.weekMaxPoints) {
-        return selectedInstance.weekMaxPoints
+      if (points > selectedCourse.weekMaxPoints) {
+        return selectedCourse.weekMaxPoints
       }
 
       return points
@@ -202,11 +202,11 @@ export class ReviewStudent extends Component {
       checklistOutput = generateChecksFeedbackText(allChecks)
     }
 
-    const isFinalWeek = Number(weekNumber) > selectedInstance.weekAmount
+    const isFinalWeek = Number(weekNumber) > selectedCourse.weekAmount
 
     return (
       <div className="ReviewStudent" style={{ textAlign: 'center' }}>
-        <CourseNameHeader name={selectedInstance.name} />
+        <CourseNameHeader name={selectedCourse.name} />
         <StudentNameHeader
           name={`${studentData[0].User.firsts} ${studentData[0].User.lastname}`}
         />
@@ -224,7 +224,7 @@ export class ReviewStudent extends Component {
               <Form onSubmit={this.handleSubmit}>
                 <Form.Group inline unstackable>
                   <Form.Field>
-                    <label>Points 0-{selectedInstance.weekMaxPoints}</label>
+                    <label>Points 0-{selectedCourse.weekMaxPoints}</label>
 
                     <Input ref={this.reviewPointsRef} name="points" defaultValue={weekData[0] ? weekData[0].points : ''} type="number" step="0.01" style={{ width: '150px', align: 'center' }} />
                   </Form.Field>
@@ -240,7 +240,7 @@ export class ReviewStudent extends Component {
                   <Button className="ui center floated green button" type="submit">
                     Save
                   </Button>
-                  <Link to={`/labtool/browsereviews/${selectedInstance.ohid}/${studentData[0].id}`} type="Cancel">
+                  <Link to={`/labtool/browsereviews/${selectedCourse.ohid}/${studentData[0].id}`} type="Cancel">
                     <Button className="ui center floated button" type="cancel">
                       Cancel
                     </Button>
@@ -265,7 +265,7 @@ export class ReviewStudent extends Component {
                                     <Input
                                       type="checkbox"
                                       defaultChecked={checks[row.name] !== undefined ? checks[row.name] : false}
-                                      onChange={this.toggleCheckbox(row.name, studentInstance, weekNumber)}
+                                      onChange={this.toggleCheckbox(row.name, studentId, weekNumber)}
                                     />
                                   </Grid.Column>
                                   <Grid.Column width={10}>

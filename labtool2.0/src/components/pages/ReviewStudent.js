@@ -299,7 +299,6 @@ const mapStateToProps = state => {
   return {
     selectedInstance: state.selectedInstance,
     notification: state.notification,
-    courseData: state.coursePage,
     weekReview: state.weekReview,
     loading: state.loading
   }

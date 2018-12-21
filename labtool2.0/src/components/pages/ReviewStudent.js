@@ -189,7 +189,7 @@ export class ReviewStudent extends Component {
         this.props.selectedInstance.weekAmount
 
       return (
-        <div className="ReviewStudent" style={{ textAlignVertical: 'center', textAlign: 'center' }}>
+        <div className="ReviewStudent" style={{ textAlign: 'center' }}>
           <CourseNameHeader name={this.props.selectedInstance.name} />
           <StudentNameHeader
             name={`${studentData[0].User.firsts} ${studentData[0].User.lastname}`}

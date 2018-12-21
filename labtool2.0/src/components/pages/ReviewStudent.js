@@ -111,13 +111,12 @@ export class ReviewStudent extends Component {
   }
 
   render() {
-    const {
-      loading,
-      selectedInstance: selectedCourse,
-      studentInstance: studentId,
-      weekNumber,
-      weekReview
-    } = this.props
+    const { loading, selectedInstance: selectedCourse, weekReview } = this.props
+    // studentInstance and weekNumber are passed down from the react-router
+    // match params as strings. Convert to numbers so they can be compared with
+    // the ids in the data.
+    const studentId = Number(this.props.studentInstance)
+    const weekNumber = Number(this.props.weekNumber)
 
     if (loading.loading) {
       return <Loader active />
@@ -129,10 +128,8 @@ export class ReviewStudent extends Component {
       return <Loader active />
     }
 
-    //this.props.studentInstance is a string, therefore casting to number.
-    const studentData = weekReview.data.filter(dataArray => dataArray.id === Number(studentId))
-    //this.props.weekNumber is a string, therefore casting to number.
-    const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === Number(weekNumber))
+    const studentData = weekReview.data.filter(dataArray => dataArray.id === studentId)
+    const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === weekNumber)
     const checks = weekData[0] ? weekData[0].checks : {}
     const weekPoints = studentData[0].weeks
       .filter(week => week.weekNumber < weekNumber)
@@ -143,7 +140,7 @@ export class ReviewStudent extends Component {
     const codeReviewPoints = studentData[0].codeReviews.map(review => review.points).reduce((a, b) => {
       return a + b
     }, 0)
-    const checkList = selectedCourse.checklists.find(checkl => checkl.week === Number(weekNumber))
+    const checkList = selectedCourse.checklists.find(checkl => checkl.week === weekNumber)
 
     const isChecked = checkName => {
       return weekReview.checks[checkName] === undefined

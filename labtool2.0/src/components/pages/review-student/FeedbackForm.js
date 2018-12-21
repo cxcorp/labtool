@@ -38,11 +38,11 @@ const FeedbackField = ({ forwardRef, initialText }) => (
     </label>
     <div ref={forwardRef}>
       {/* Do not change the contents of this div.
-    * ReviewStudent::copyChecklistOutput relies on its current structure
-    * to copy the checks' generated text to the TextArea.
-    * TextArea cannot be ref'd directly because it is a stateless
-    * component.
-    */}
+        * ReviewStudent::copyChecklistOutput relies on its current structure
+        * to copy the checks' generated text to the TextArea.
+        * TextArea cannot be ref'd directly because it is a stateless
+        * component.
+        */}
       <Form.TextArea
         defaultValue={initialText}
         name="comment"
@@ -75,6 +75,16 @@ ButtonControlsField.propTypes = {
   cancelLinkHref: PropTypes.string
 }
 
+/**
+ * Feedback form of the weekly student review page.
+ *
+ * The form and its fields are uncontrolled. The refs to the fields are passed
+ * down because the "Copy to review fields" functionality is implemented in
+ * ReviewStudent by setting/appending to the uncontrolled fields directly.
+ *
+ * The values themselves are retrieved when the form is submitted via the fields'
+ * names from `e.target`.
+ */
 const FeedbackForm = ({
   cancelLinkHref,
   forwardReviewPointsRef,

@@ -30,7 +30,12 @@ const FeedbackForm = ({
       <label>Feedback</label>
       <Form.Group inline unstackable>
         <div ref={forwardReviewTextRef}>
-          {/*Do not add anything else to this div. If you do, you'll break this.copyChecklistOutput.*/}
+          {/* Do not change the contents of this div.
+            * ReviewStudent::copyChecklistOutput relies on its current structure
+            * to copy the checks' generated text to the TextArea.
+            * TextArea cannot be ref'd directly because it is a stateless
+            * component.
+            */}
           <Form.TextArea
             defaultValue={initialReviewText}
             name="comment"

@@ -83,7 +83,7 @@ class App extends Component {
             <Route path={`/labtool/registerPage`} component={RegisterPage} />
             <Route
               path={`/labtool/reviewstudent/:id/:si/:wk`}
-              render={({ match, history }) => <ReviewStudent history={history} courseId={match.params.id} studentInstance={match.params.si} weekNumber={match.params.wk} />}
+              render={({ match }) => <ReviewStudent courseId={match.params.id} studentInstance={match.params.si} weekNumber={match.params.wk} />}
             />
             <Route path={`/labtool/ModifyCourseInstancePage/:id`} render={({ match }) => <ModifyCourseInstancePage courseId={match.params.id} />} />
             <Route path={`/labtool/ModifyCourseInstanceStaff/:id`} render={({ match }) => <ModifyCourseInstanceStaff courseId={match.params.id} />} />

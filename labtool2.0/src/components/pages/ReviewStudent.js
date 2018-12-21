@@ -2,12 +2,49 @@ import React, { Component } from 'react'
 import { Button, Form, Input, Grid, Card, Loader, Icon } from 'semantic-ui-react'
 import { Link, Redirect } from 'react-router-dom'
 import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
 import { createOneWeek } from '../../services/week'
 import { getOneCI, coursePageInformation } from '../../services/courseInstance'
 import { clearNotifications } from '../../reducers/notificationReducer'
 import { toggleCheck, resetChecklist } from '../../reducers/weekReviewReducer'
 import { resetLoading, addRedirectHook } from '../../reducers/loadingReducer'
 import store from '../../store'
+
+const CourseNameHeader = ({ name }) => <h2>{name}</h2>
+CourseNameHeader.propTypes = {
+  name: PropTypes.string
+}
+
+const StudentNameHeader = ({ name }) => <h3>{name}</h3>
+StudentNameHeader.propTypes = {
+  name: PropTypes.string
+}
+
+const TotalPoints = ({
+  isFinalWeek,
+  weekPoints,
+  codeReviewPoints,
+  ...otherProps
+}) => {
+  const title = isFinalWeek
+    ? 'Points before final review'
+    : 'Points from previous weeks'
+  const pointsTotal = weekPoints + codeReviewPoints
+
+  return (
+    <div {...otherProps}>
+      <h3>{`${title}: ${pointsTotal}`}</h3>
+      Week points: {weekPoints} <br />
+      Code review points: {codeReviewPoints}
+    </div>
+  )
+}
+
+TotalPoints.propTypes = {
+  isFinalWeek: PropTypes.bool,
+  weekPoints: PropTypes.number,
+  codeReviewPoints: PropTypes.number
+}
 
 /**
  *  The page which is used by teacher to review submissions,.
@@ -147,31 +184,31 @@ export class ReviewStudent extends Component {
         checklistOutput = generateChecksFeedbackText(allChecks)
       }
 
+      const isFinalWeek =
+        Number(this.props.weekNumber, 10) >
+        this.props.selectedInstance.weekAmount
+
       return (
         <div className="ReviewStudent" style={{ textAlignVertical: 'center', textAlign: 'center' }}>
-          <h2> {this.props.selectedInstance.name}</h2>
-          <h3>
-            {' '}
-            {studentData[0].User.firsts} {studentData[0].User.lastname}{' '}
-          </h3>
-          {this.props.weekNumber > this.props.selectedInstance.weekAmount ? <h3>Final Review</h3> : <h3>Viikko {this.props.weekNumber}</h3>}
+          <CourseNameHeader name={this.props.selectedInstance.name} />
+          <StudentNameHeader
+            name={`${studentData[0].User.firsts} ${studentData[0].User.lastname}`}
+          />
+          {isFinalWeek ? (
+            <h3>Final Review</h3>
+          ) : (
+            <h3>Viikko {this.props.weekNumber}</h3>
+          )}
           <Grid>
             <Grid.Row columns={2}>
               <Grid.Column>
-                {this.props.weekNumber > this.props.selectedInstance.weekAmount ? (
-                  <div align="left">
-                    <h3>Points before final review: {weekPoints + codeReviewPoints} </h3>
-                    Week points: {weekPoints} <br />
-                    Code review points: {codeReviewPoints}
-                  </div>
-                ) : (
-                  <div align="left">
-                    <h3>Points from previous weeks: {weekPoints + codeReviewPoints} </h3>
-                    Week points: {weekPoints} <br />
-                    Code review points: {codeReviewPoints}
-                  </div>
-                )}
-                {this.props.weekNumber > this.props.selectedInstance.weekAmount ? <h2>Final Review Points</h2> : <h2>Feedback</h2>}
+                <TotalPoints
+                  isFinalWeek={isFinalWeek}
+                  weekPoints={weekPoints}
+                  codeReviewPoints={codeReviewPoints}
+                  align="left"
+                />
+                {isFinalWeek ? <h2>Final Review Points</h2> : <h2>Feedback</h2>}
                 <Form onSubmit={this.handleSubmit}>
                   <Form.Group inline unstackable>
                     <Form.Field>

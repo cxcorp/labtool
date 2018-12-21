@@ -111,10 +111,10 @@ export class ReviewStudent extends Component {
       return <Redirect to={`/labtool/courses/${this.props.selectedInstance.ohid}`} />
     }
     if (Array.isArray(this.props.weekReview.data)) {
-      //this.props.ownProps.studentInstance is a string, therefore casting to number.
-      const studentData = this.props.weekReview.data.filter(dataArray => dataArray.id === Number(this.props.ownProps.studentInstance))
+      //this.props.studentInstance is a string, therefore casting to number.
+      const studentData = this.props.weekReview.data.filter(dataArray => dataArray.id === Number(this.props.studentInstance))
       //this.props.weekNumber is a string, therefore casting to number.
-      const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === Number(this.props.ownProps.weekNumber))
+      const weekData = studentData[0].weeks.filter(theWeek => theWeek.weekNumber === Number(this.props.weekNumber))
       const checks = weekData[0] ? weekData[0].checks : {}
       const weekPoints = studentData[0].weeks
         .filter(week => week.weekNumber < this.props.weekNumber)
@@ -125,7 +125,7 @@ export class ReviewStudent extends Component {
       const codeReviewPoints = studentData[0].codeReviews.map(review => review.points).reduce((a, b) => {
         return a + b
       }, 0)
-      const checkList = this.props.selectedInstance.checklists.find(checkl => checkl.week === Number(this.props.ownProps.weekNumber))
+      const checkList = this.props.selectedInstance.checklists.find(checkl => checkl.week === Number(this.props.weekNumber))
 
       const isChecked = checkName => {
         return this.props.weekReview.checks[checkName] === undefined
@@ -253,7 +253,7 @@ export class ReviewStudent extends Component {
                                       <Input
                                         type="checkbox"
                                         defaultChecked={checks[row.name] !== undefined ? checks[row.name] : false}
-                                        onChange={this.toggleCheckbox(row.name, this.props.ownProps.studentInstance, this.props.ownProps.weekNumber)}
+                                        onChange={this.toggleCheckbox(row.name, this.props.studentInstance, this.props.weekNumber)}
                                       />
                                     </Grid.Column>
                                     <Grid.Column width={10}>
@@ -295,9 +295,8 @@ export class ReviewStudent extends Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = state => {
   return {
-    ownProps,
     selectedInstance: state.selectedInstance,
     notification: state.notification,
     courseData: state.coursePage,

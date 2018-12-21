@@ -28,7 +28,7 @@ const FeedbackForm = ({
         </Form.Field>
       </Form.Group>
       <label>Feedback</label>
-      <Form.Group inline unstackable style={{ textAlignVertical: 'top' }}>
+      <Form.Group inline unstackable>
         <div ref={forwardReviewTextRef}>
           {/*Do not add anything else to this div. If you do, you'll break this.copyChecklistOutput.*/}
           <Form.TextArea

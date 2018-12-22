@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, Form, Input, Grid, Card, Loader, Icon } from 'semantic-ui-react'
+import { Button, Form, Grid, Loader } from 'semantic-ui-react'
 import { Redirect } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -10,6 +10,7 @@ import { toggleCheck, resetChecklist } from '../../reducers/weekReviewReducer'
 import { resetLoading, addRedirectHook } from '../../reducers/loadingReducer'
 import store from '../../store'
 import FeedbackForm from './review-student/FeedbackForm'
+import Checklists from './review-student/Checklists'
 
 const CourseNameHeader = ({ name }) => <h2>{name}</h2>
 CourseNameHeader.propTypes = {
@@ -46,6 +47,29 @@ TotalPoints.propTypes = {
   weekPoints: PropTypes.number,
   codeReviewPoints: PropTypes.number
 }
+
+/**
+ * Transforms a weekly checklist's `list` to an array of
+ * lists. This should probably be a redux selector.
+ *
+ * Example in:
+ *
+ * ```
+{
+  'Github exercise': [{ checkedPoints: 0.25, ... }],
+  'foo': []
+}
+```
+ * Example out:
+ * ```
+[
+  { name: 'Github exercise', items: [{ checkedPoints: 0.25, ... }] },
+  { name: 'foo', items: [] }
+]
+```
+ */
+const mapChecklistsToArray = list =>
+  Object.entries(list).map(([name, items]) => ({ name, items }))
 
 /**
  *  The page which is used by teacher to review submissions,.
@@ -98,11 +122,13 @@ export class ReviewStudent extends Component {
     }
   }
 
-  toggleCheckbox = (name, studentId, weekNbr) => async e => {
-    this.props.toggleCheck(name, studentId, weekNbr)
+  toggleCheckbox = name => e => {
+    const studentId = Number(this.props.studentInstance)
+    const weekNumber = Number(this.props.weekNumber)
+    this.props.toggleCheck(name, studentId, weekNumber)
   }
 
-  copyChecklistOutput = async e => {
+  handleCopyChecklistOutputSubmit = e => {
     e.preventDefault()
     this.reviewPointsRef.current.inputRef.value = Number(e.target.points.value).toFixed(2)
     /* The below line is as hacky as it is because functional elements cannot directly have refs.
@@ -238,42 +264,28 @@ export class ReviewStudent extends Component {
                 <h2>Checklist</h2>
                 {checkList ? (
                   <div className="checklist">
-                    {Object.keys(checkList.list).map(cl => (
-                      <Card className="checklistCard" fluid color="red" key={cl}>
-                        <Card.Content header={cl} />
-                        {checkList.list[cl].map(row => (
-                          <Card.Content className="checklistCardRow" key={row.name}>
-                            <Form.Field>
-                              <Grid>
-                                <Grid.Row>
-                                  <Grid.Column width={3}>
-                                    <Input
-                                      type="checkbox"
-                                      defaultChecked={checks[row.name] !== undefined ? checks[row.name] : false}
-                                      onChange={this.toggleCheckbox(row.name, studentId, weekNumber)}
-                                    />
-                                  </Grid.Column>
-                                  <Grid.Column width={10}>
-                                    <span style={{ flexGrow: 1, textAlign: 'center' }}>{row.name}</span>
-                                  </Grid.Column>
-                                  <Grid.Column width={3}>
-                                    <span>{`${row.checkedPoints} p / ${row.uncheckedPoints} p`}</span>
-                                  </Grid.Column>
-                                </Grid.Row>
-                              </Grid>
-                            </Form.Field>
-                          </Card.Content>
-                        ))}
-                      </Card>
-                    ))}
-                    <div>
-                      <Form className="checklistOutput" onSubmit={this.copyChecklistOutput}>
-                        <Form.TextArea className="checklistOutputText" name="text" value={checklistOutput} style={{ width: '100%', height: '250px' }} />
-                        <p className="checklistOutputPoints">points: {checklistPoints.toFixed(2)}</p>
-                        <input type="hidden" name="points" value={checklistPoints} />
-                        <Button type="submit">Copy to review fields</Button>
-                      </Form>
-                    </div>
+                    <Checklists
+                      lists={mapChecklistsToArray(checkList.list)}
+                      checks={checks}
+                      createToggleCheckbox={this.toggleCheckbox}
+                    />
+                    <Form
+                      className="checklistOutput"
+                      onSubmit={this.handleCopyChecklistOutputSubmit}
+                      style={{ marginTop: '1em' }}
+                    >
+                      <Form.TextArea
+                        className="checklistOutputText"
+                        name="text"
+                        value={checklistOutput}
+                        style={{ width: '100%', height: '250px' }}
+                      />
+                      <p className="checklistOutputPoints">
+                        points: {checklistPoints.toFixed(2)}
+                      </p>
+                      <input type="hidden" name="points" value={checklistPoints} />
+                      <Button type="submit">Copy to review fields</Button>
+                    </Form>
                   </div>
                 ) : (
                   <p>There is no checklist for this week.</p>
